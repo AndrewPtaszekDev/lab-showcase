@@ -2,11 +2,10 @@
 
 Self-hosted infrastructure running on Proxmox, orchestrated with Docker Compose and fronted by Traefik.
 
-> **Note:** This is a sanitized copy of a live configuration. All secrets, credentials, and private domains have been replaced with descriptive placeholders. It is not intended to be deployed as-is.
+> **Note:** This is a sanitized copy of a live configuration. All secrets, credentials, and private domains have been replaced with descriptive placeholders.
 
-## Purpose & Goals
-To create a self-directed learning environment.  
-I've learned:
+# Purpose & Goals
+To create a self-directed learning environment. I've learned:
 * Production-grade technologies
 * System design and DevOps practices
 * Automation and scripting
@@ -31,7 +30,7 @@ I've learned:
 ![[New Monitoring Diagram Dark.png]]
 ### GitOps
 ![[GitOps Diagram Public.png]]
-## Services
+# Services
 
 ### Core Infrastructure
 | Service | Purpose                 | URL/Access       | Stack      | Exposure     |
