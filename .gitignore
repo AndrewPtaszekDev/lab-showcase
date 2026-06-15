@@ -24,7 +24,8 @@ postgres/
 .bash_logout
 .profile
 
-# Dotfiles you don't need tracked
+# other Dotfiles
+.DS_Store
 .bookScraping/
 .vscode-server/
 calibre/
