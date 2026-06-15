@@ -27,9 +27,9 @@ To create a self-directed learning environment. I've learned:
 ## Network Topology
 ![[Lab Network Diagram.png]]
 ## Observability
-![](images/New Monitoring Diagram Dark)
+![](images/Monitoring-Dark.png)
 ### GitOps
-![](GitOps Diagram Public.png)
+![](images/GitOps-Diagram.png)
 # Services
 
 ### Core Infrastructure
