@@ -1,0 +1,39 @@
+# Private/sensitive
+.ssh/
+.bash_history
+.lesshst
+.wget-hsts
+.sudo_as_admin_successful
+.env
+# Credentials & caches
+.git-credentials
+.cache/
+.npm/
+.local/
+.dotnet/
+
+# Docker/runtime data
+.docker/
+postgres/
+
+# Editor/IDE
+.vscode-server/
+
+# Shell config (optional - up to you)
+.bashrc
+.bash_logout
+.profile
+
+# Dotfiles you don't need tracked
+.bookScraping/
+.vscode-server/
+calibre/
+minecraft/
+snap/
+quartz/vault/
+docs/vault/
+remark/
+ghost/
+mysql/
+ingress-dashboard/data/
+EOF

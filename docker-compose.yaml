@@ -1,0 +1,372 @@
+services:
+  traefik:
+    image: traefik:v3.6.1
+    container_name: traefik
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - proxy
+    ports:
+      - "80:80"
+      - "8081:8080" # remark42
+      - "444:443" #remark42
+      - "443:443"
+      - "25565:25565"
+      - "3000:3000"
+      - "3030:3000" #umami
+      - "2368:2368" # ghost
+    environment:
+      - CF_DNS_API_TOKEN=YOUR_CLOUDFLARE_DNS_API_TOKEN
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./letsencrypt:/letsencrypt
+      - ./traefik/traefik.yml:/traefik.yml:ro
+      - traefik_logs:/logs
+    labels:
+      # Enable self‑routing
+      - "traefik.enable=true"
+      # Dashboard router
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.example.com`)"
+      - "traefik.http.routers.dashboard.entrypoints=websecure"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      - "traefik.http.routers.dashboard.tls=true"
+      - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.dashboard.tls.domains[0].main=example.com"
+      - "traefik.http.routers.dashboard.tls.domains[0].sans=*.example.com" # Wildcard TLS for all subdomains
+      # Basic‑auth middleware
+      - "traefik.http.middlewares.dashboard-auth.basicauth.users=admin:$$apr1$$HASHED_BASIC_AUTH_PASSWORD"
+      - "traefik.http.routers.dashboard.middlewares=dashboard-auth@docker"
+
+  quartz:
+    build: ./quartz
+    # image: shommey/dockerized-quartz:latest
+    container_name: quartz
+    environment:
+      GIT_REPO: "http://gitea:GITEA_ACCESS_TOKEN@DOCKER_HOST_IP:3000/gitea/lab-docs.git"
+    networks:
+      - proxy
+      - db-gitea
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.quartz.rule=Host(`example.com`)"
+      - "traefik.http.routers.quartz.entrypoints=websecure"
+      - "traefik.http.routers.quartz.tls=true"
+      - "traefik.http.services.quartz.loadbalancer.server.port=80"
+    volumes:
+      - ./quartz/vault/content:/vault:ro
+      - ./quartz/vault:/usr/src/app/quartz
+    restart: unless-stopped
+
+  remark:
+    image: ghcr.io/umputun/remark42:latest
+    container_name: "remark"
+    restart: always
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.remark.rule=Host(`remark.example.com`)"
+      - "traefik.http.routers.remark.entrypoints=websecure"
+      - "traefik.http.routers.remark.tls=true"
+      - "traefik.http.services.remark.loadbalancer.server.port=8080"
+    environment:
+      - REMARK_URL=https://remark.example.com
+      - SITE=remark
+      - SECRET=YOUR_REMARK42_SECRET
+      - AUTH_ANON=true
+      - AUTH_GITHUB_CID=YOUR_GITHUB_OAUTH_CLIENT_ID
+      - AUTH_GITHUB_CSEC=YOUR_GITHUB_OAUTH_CLIENT_SECRET
+      - AUTH_GOOGLE_CID=YOUR_GOOGLE_OAUTH_CLIENT_ID
+      - AUTH_GOOGLE_CSEC=YOUR_GOOGLE_OAUTH_CLIENT_SECRET
+    networks:
+      - proxy
+    volumes:
+      - ./remark:/srv/var
+
+  calibre-web-automated:
+    image: crocodilestick/calibre-web-automated:latest
+    container_name: calibre
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=UTC
+      - NETWORK_SHARE_MODE=false
+      - CWA_PORT_OVERRIDE=8083
+    volumes:
+      - ./calibre/config:/config
+      - ./calibre/book-ingest:/cwa-book-ingest
+      - ./calibre/calibre-library:/calibre-library
+      - ./calibre/config/plugins:/config/.config/calibre/plugins
+    ports:
+      - 8083:8083
+    restart: unless-stopped
+
+  postgres:
+    image: docker.io/library/postgres:14
+    container_name: postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=YOUR_POSTGRES_USER
+      - POSTGRES_PASSWORD=YOUR_POSTGRES_PASSWORD
+    networks:
+      - db-gitea
+      - db-umami
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
+
+#########################################
+# DOCS & VERSION CONTROL
+#########################################
+
+  gitea:
+    image: docker.gitea.com/gitea:1.25.5
+    container_name: gitea
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+      - GITEA__database__DB_TYPE=postgres
+      - GITEA__database__HOST=postgres:5432
+      - GITEA__database__NAME=gitea
+      - GITEA__database__USER=gitea
+      - GITEA__database__PASSWD=YOUR_GITEA_DB_PASSWORD
+    restart: always
+    networks:
+      - db-gitea
+    volumes:
+      - gitea:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "3010:3000"
+      - "222:22"
+    depends_on:
+      - postgres
+
+  gitea-runner:
+    container_name: gitea-runner
+    image: gitea/act_runner
+    environment:
+      - GITEA_INSTANCE_URL=http://gitea:3000
+      - GITEA_RUNNER_REGISTRATION_TOKEN=YOUR_GITEA_RUNNER_REGISTRATION_TOKEN
+    networks:
+      - db-gitea
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./gitea-runner/config.yaml:/config.yaml
+    depends_on:
+      - gitea
+
+  docs:
+    build: ./docs
+    container_name: docs
+    environment:
+      GIT_REPO: "http://gitea:YOUR_GITEA_ACCESS_TOKEN@DOCKER_HOST_IP:3000/gitea/lab-docs.git"
+    networks:
+      - proxy
+      - db-gitea
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.docs.rule=Host(`docs.example.com`)"
+      - "traefik.http.routers.docs.entrypoints=websecure"
+      - "traefik.http.routers.docs.tls=true"
+      - "traefik.http.services.docs.loadbalancer.server.port=80"
+      - "traefik.http.middlewares.docs-auth.basicauth.users=admin:$$apr1$$HASHED_BASIC_AUTH_PASSWORD"
+      - "traefik.http.routers.docs.middlewares=docs-auth"
+    volumes:
+      - ./docs/vault/content:/vault:ro
+      - ./docs/vault:/usr/src/app/quartz
+    restart: unless-stopped
+
+
+#########################################
+# OBSERVABILITY
+#########################################
+
+  prometheus:
+      image: prom/prometheus
+      container_name: prometheus
+      networks:
+        - monitoring
+        - monitoring_lan #for Node Exporter agent communication
+      ports:
+        - "9090:9090"
+      command:
+        - '--config.file=/etc/prometheus/prometheus.yml'
+      restart: unless-stopped
+      volumes:
+        - ./prometheus:/etc/prometheus
+        - prom_data:/prometheus
+      depends_on:
+        - cadvisor
+  grafana:
+      image: grafana/grafana
+      container_name: grafana
+      networks:
+        - proxy
+        - monitoring
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.grafana.rule=Host(`grafana.example.com`)"
+        - "traefik.http.routers.grafana.entrypoints=websecure"
+        - "traefik.http.routers.grafana.tls=true"
+        - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+        # reject non-VPN/local traffic
+        - "traefik.http.routers.grafana.middlewares=vpn-only"
+        - "traefik.http.middlewares.vpn-only.ipallowlist.sourcerange=10.0.0.0/24 # LAN/VPN subnet"
+      restart: unless-stopped
+      environment:
+        - GF_SECURITY_ADMIN_USER=admin
+        - GF_SECURITY_ADMIN_PASSWORD=YOUR_GRAFANA_ADMIN_PASSWORD
+      volumes:
+        - ./grafana/provisioning/datasources/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+        - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+        - ./grafana/dashboards:/etc/grafana/provisioning/dashboards/json_files
+  loki:
+      image: grafana/loki:latest
+      container_name: loki
+      networks:
+        - monitoring
+        - monitoring_lan
+      ports:
+        - "3100:3100"
+      restart: unless-stopped
+      command: -config.file=/etc/loki/local-config.yaml
+      volumes:
+        - ./loki:/etc/loki
+        - loki_data:/loki
+
+  promtail:
+      image: grafana/promtail:3.5.9
+      container_name: promtail
+      networks:
+        - monitoring
+      restart: unless-stopped
+      command: -config.file=/etc/promtail/config.yml
+      volumes:
+        - ./promtail:/etc/promtail
+        - /var/lib/docker/containers:/var/lib/docker/containers:ro
+        - /var/run/docker.sock:/var/run/docker.sock:ro
+        - /var/log:/var/log:ro
+        - /var/log/journal:/var/log/journal:ro
+      user: "0:0" # Runs as root to ensure it can read host logs
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    networks:
+      - monitoring
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+
+  ingress-agent:
+    image: hhftechnology/traefik-log-dashboard-agent:latest
+    container_name: ingress-agent
+    restart: unless-stopped
+    ports:
+      - "5000:5000" #remove; only needs to be referenced over monitoring via agent:5000
+    volumes:
+      - ./ingress-dashboard/data/logs:/logs:ro
+      - ./ingress-dashboard/data/positions:/data
+      - traefik_logs:/logs:ro
+      - ./ingress-dashboard/data/geoip:/geoip:ro
+    environment:
+      - TRAEFIK_LOG_DASHBOARD_ACCESS_PATH=/logs/access.log
+      - TRAEFIK_LOG_DASHBOARD_ERROR_PATH=/logs/traefik.log
+      - TRAEFIK_LOG_DASHBOARD_AUTH_TOKEN=YOUR_INGRESS_DASHBOARD_AUTH_TOKEN
+      - TRAEFIK_LOG_DASHBOARD_SYSTEM_MONITORING=true
+      - TRAEFIK_LOG_DASHBOARD_LOG_FORMAT=json
+      - TRAEFIK_LOG_DASHBOARD_GEOIP_ENABLED=true
+      - TRAEFIK_LOG_DASHBOARD_GEOIP_CITY_DB=/geoip/GeoLite2-City.mmdb
+      - TRAEFIK_LOG_DASHBOARD_GEOIP_COUNTRY_DB=/geoip/GeoLite2-Country.mmdb
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5000/api/logs/status"]
+      interval: 2m
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - monitoring
+
+  ingress-dashboard:
+    image: hhftechnology/traefik-log-dashboard:latest
+    container_name: ingress-dashboard
+    restart: unless-stopped
+    ports:
+      - "3020:3000"
+    volumes:
+      - ./ingress-dashboard/data/dashboard:/app/data
+      - ./ingress-dashboard/data/positions:/data
+      - ./ingress-dashboard/data/geoip/GeoLite2-City.mmdb:/geoip/GeoLite2-City.mmdb:ro
+    environment:
+      - AGENT_API_URL=http://ingress-agent:5000
+      - AGENT_API_TOKEN=YOUR_INGRESS_DASHBOARD_AUTH_TOKEN
+      - AGENT_NAME=Ingress Agent
+      - GEOIP_LOCAL_DB_PATH=/geoip/GeoLite2-City.mmdb
+
+      - NODE_ENV=production
+      - PORT=3000
+
+      # Display Configuration
+      - NEXT_PUBLIC_SHOW_DEMO_PAGE=true
+      - NEXT_PUBLIC_MAX_LOGS_DISPLAY=500
+    depends_on:
+      ingress-agent:
+        condition: service_healthy
+    networks:
+      - proxy
+      - monitoring
+
+  umami:
+    image: ghcr.io/umami-software/umami:latest
+    container_name: umami
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.umami.rule=Host(`umami.example.com`)"
+      - "traefik.http.routers.umami.entrypoints=websecure"
+      - "traefik.http.routers.umami.tls=true"
+      - "traefik.http.services.umami.loadbalancer.server.port=3000"
+    environment:
+      DATABASE_URL: postgres://umami:YOUR_UMAMI_DB_PASSWORD@postgres:5432/umami
+      APP_SECRET: 'YOUR_UMAMI_APP_SECRET'
+    depends_on:
+      postgres:
+        condition: service_started
+    networks:
+      - db-umami
+      - proxy
+    restart: always
+    volumes:
+      - umami_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl http://localhost:3000/api/heartbeat"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  prom_data:
+  loki_data:
+  gitea:
+    driver: local
+  traefik_logs:
+  umami_data:
+networks:
+  proxy:
+    name: proxy
+  monitoring:
+    name: monitoring
+    driver: bridge
+    internal: true
+  monitoring_lan: # for internal services that need access to 10.0.0.0/24 # LAN/VPN subnet connections (other VMs, etc.)
+    name: monitoring_lan
+    driver: bridge
+  db-gitea: # for Gitea — db communication. 
+    name: db-gitea
+    external: false
+  db-umami:
+    name: db-umami
+    external: false

@@ -1,0 +1,60 @@
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: your-email@example.com
+      storage: /letsencrypt/acme.json
+      dnsChallenge:
+        provider: cloudflare
+        resolvers:
+          - "1.1.1.1:53"
+          - "8.8.8.8:53"
+
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+          permanent: true
+  websecure:
+    address: ":443"
+    http:
+      tls: true
+  minecraft:
+    address: ":25565"
+
+providers:
+  docker:
+    exposedByDefault: false
+    network: proxy
+
+api:
+  dashboard: true
+  insecure: false
+
+log:
+  level: INFO
+
+metrics:
+  prometheus: {}
+
+accessLog:
+  filePath: /logs/access.log
+  format: json
+  bufferingSize: 100
+
+http:
+  middlewares:
+    umami-cors:
+      headers:
+        accessControlAllowOriginList:
+          - "https://example.com,https://www.example.com"
+        accessControlAllowMethods:
+          - "GET"
+          - "POST"
+          - "OPTIONS"
+        accessControlAllowHeaders:
+          - "Content-Type"
+        accessControlMaxAge: 100

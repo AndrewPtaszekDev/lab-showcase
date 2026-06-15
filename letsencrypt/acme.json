@@ -1,0 +1,28 @@
+{
+  "letsencrypt": {
+    "Account": {
+      "Email": "your-email@example.com",
+      "Registration": {
+        "body": {
+          "status": "valid"
+        },
+        "uri": "https://acme-v02.api.letsencrypt.org/acme/acct/ACME_ACCOUNT_ID"
+      },
+      "PrivateKey": "YOUR_ACME_ACCOUNT_PRIVATE_KEY_BASE64",
+      "KeyType": "4096"
+    },
+    "Certificates": [
+      {
+        "domain": {
+          "main": "example.com",
+          "sans": [
+            "*.example.com"
+          ]
+        },
+        "certificate": "YOUR_CERTIFICATE_BASE64",
+        "key": "YOUR_CERTIFICATE_PRIVATE_KEY_BASE64",
+        "Store": "default"
+      }
+    ]
+  }
+}
