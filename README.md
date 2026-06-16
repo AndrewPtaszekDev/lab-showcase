@@ -13,13 +13,13 @@ Self-hosted infrastructure showcase running on Proxmox, orchestrated with Docker
 
 <img width="1171" height="651" alt="Grafana-Showcase" src="https://github.com/user-attachments/assets/5f4ada9b-fb07-4480-acf8-eea6610349b3" />
 
-# Purpose & Goals
-To create a self-directed learning environment. I've learned:
+# Purpose & Lessons
+I wanted to create a self-directed learning environment. I've learned:
 * Production-grade technologies
 * System design and DevOps practices
 * Automation and scripting
-* Technical documentation design & teaching those concepts
-* To create useful services for myself (like [my webiste](https://ptaszek.studio)!)
+* Technical documentation design & teaching those concepts via workshops
+* To deploy useful services for myself (like [my website](https://ptaszek.studio)!)
 
 # Architecture
 ## Observability
@@ -67,5 +67,4 @@ To create a self-directed learning environment. I've learned:
 | `monitoring`     | Internal-only bridge for the observability stack      |
 | `monitoring_lan` | Bridged to LAN for scraping Node Exporter on other VMs |
 | `db-gitea`       | Gitea ↔ PostgreSQL isolation                         |
-| `db-umami`       | Umami ↔ PostgreSQL isolation                         |                          |
-```
+| `db-umami`       | Umami ↔ PostgreSQL isolation                         | 
