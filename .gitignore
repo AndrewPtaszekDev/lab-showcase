@@ -19,7 +19,7 @@ postgres/
 # Editor/IDE
 .vscode-server/
 
-# Shell config (optional - up to you)
+# Shell config
 .bashrc
 .bash_logout
 .profile
