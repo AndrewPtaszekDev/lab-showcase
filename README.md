@@ -1,8 +1,17 @@
-# Homelab
+# Enterprise Infrastructure Lab
 
-Self-hosted infrastructure running on Proxmox, orchestrated with Docker Compose and fronted by Traefik.
+Self-hosted infrastructure showcase running on Proxmox, orchestrated with Docker Compose and fronted by Traefik.
 
-> **Note:** This is a sanitized copy of a live configuration. All secrets, credentials, and private domains have been replaced with descriptive placeholders.
+> **Operational resilience**
+> Self-hosted version control, comprehensive runbooks & documentation [(see examples)](runbooks/), automatic offsite backups & repo mirroring.
+
+> **Full-stack observability**
+> Prometheus metrics, Grafana dashboards, Loki + Promtail log aggregation, per-container resource tracking via cAdvisor, and user service ingress analytics dashboards.
+
+> **Layered security**
+> Segmented Docker networks isolate databases, monitoring, & public services. Traefik terminates TLS Let's Encrypt certs. Sensitive dashboards sit behind VPN-only access with basic auth.
+
+<img width="1171" height="651" alt="Grafana-Showcase" src="https://github.com/user-attachments/assets/5f4ada9b-fb07-4480-acf8-eea6610349b3" />
 
 # Purpose & Goals
 To create a self-directed learning environment. I've learned:
@@ -10,26 +19,15 @@ To create a self-directed learning environment. I've learned:
 * System design and DevOps practices
 * Automation and scripting
 * Technical documentation design & teaching those concepts
-* To create useful services for myself (like [this site](https://ptaszek.studio)!)
-# Hardware 
-* **CPU:** AMD Ryzen 9 5950X (16C / 32T, x86_64)
-* **Memory:** 128GB (total) 
-* **Storage:** 
-	• 1x 2 TB NVMe SSD  
-	• Proxmox VE default LVM layout  
-	• 96 GB root volume, 8 GB swap  
-	• 1.7 TB LVM-thin pool for VM disks
-	* VM 100 disk: 16 GB 
-	* VM 101 disk: 32 GB
-* **Network**: Dual 1 GbE Ethernet NICs (1 active)
-* **OS:** Proxmox VE 9.1 (Bare Metal)
+* To create useful services for myself (like [my webiste](https://ptaszek.studio)!)
+
 # Architecture
-## Network Topology
-![[Lab Network Diagram.png]]
 ## Observability
-![Observability Diagram](images/Monitoring-Dark)
+![Observability Diagram](images/Monitoring-Diagram)
+
 ### GitOps
 ![GitOps Diagram](images/GitOps-Diagram)
+
 # Services
 
 ### Core Infrastructure
@@ -42,7 +40,7 @@ To create a self-directed learning environment. I've learned:
 ### User Services
 | Service           | Purpose                 | URL/Access      | Stack     | Exposure        |
 | ----------------- | ----------------------- | --------------- | --------- | --------------- |
-| Dockerized-Quartz | Site hosting + building | ptaszek.studio  | Container | Public (HTTP/S) |
+| Dockerized-Quartz | Site hosting + building | [ptaszek.studio](https://ptaszek.studio)  | Container | Public (HTTP/S) |
 | Calibre web       | E-book management       | 10.0.0.206:8083 | Container | Internal        |
 ### Observability
 | Service       | Purpose                      | URL/Access             | Stack     | Exposure        |
