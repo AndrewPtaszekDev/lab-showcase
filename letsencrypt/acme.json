@@ -1,7 +1,7 @@
 {
   "letsencrypt": {
     "Account": {
-      "Email": "your-email@example.com",
+      "Email": "me@example.com",
       "Registration": {
         "body": {
           "status": "valid"
