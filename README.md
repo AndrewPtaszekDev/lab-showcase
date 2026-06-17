@@ -22,6 +22,10 @@ I wanted to create a self-directed learning environment. I've learned:
 * To deploy useful services for myself (like [my website](https://ptaszek.studio)!)
 
 # Architecture
+
+## Overview
+![Lab Archictecture Diagram](images/Lab-Architecture-Showcase)
+
 ## Observability
 ![Observability Diagram](images/Monitoring-Diagram)
 
