@@ -11,7 +11,7 @@ Self-hosted infrastructure showcase running on Proxmox, orchestrated with Docker
 > **Layered security**
 > Segmented Docker networks isolate databases, monitoring, & public services. Traefik terminates TLS Let's Encrypt certs. Sensitive dashboards sit behind VPN-only access with basic auth.
 
-I especially enjoyed creating the technical articles that I used to teach these concepts via workshops at my university. ![See them here](https://ptaszek.studio/Lab)
+I especially enjoyed creating the technical articles that I used to teach these concepts via workshops at my university. [See them here](https://ptaszek.studio/Lab)
 
 <img width="1171" height="651" alt="Grafana-Showcase" src="https://github.com/user-attachments/assets/5f4ada9b-fb07-4480-acf8-eea6610349b3" />
 
