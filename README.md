@@ -1,6 +1,6 @@
 # Enterprise Infrastructure Lab
 
-Self-hosted infrastructure showcase running on Proxmox, orchestrated with Docker Compose and fronted by Traefik.
+Self-hosted infrastructure **showcase** running on Proxmox, orchestrated with Docker Compose and fronted by Traefik. _Secrets are replaced by placeholders._
 
 > **Operational resilience**
 > Self-hosted version control, comprehensive runbooks & documentation [(see examples)](runbooks/), automatic offsite backups & repo mirroring.
