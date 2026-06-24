@@ -42,7 +42,7 @@ I wanted to create a self-directed learning environment. I've learned:
 | Proxmox  | Virtualization          | 10.0.0.10        | Bare metal | LAN          |
 | PiVPN    | VPN                     | x.ptaszek.studio | VM         | Public (UDP) |
 | PiHole   | DNS server + AD blocker | 10.0.0.159       | VM         | LAN          |
-| Traefik  | Reverse-proxy           | 10.0.0.206:8080  | Container  | VPN only     |
+| Traefik  | Reverse-proxy           | 10.0.0.206:8080  | Container  | Public (HTTP/S)    |
 | Postgres | Relational database     | postgres:5432    | Container  | Internal     |
 ### User Services
 | Service           | Purpose                 | URL/Access             | Stack     | Exposure             |
