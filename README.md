@@ -34,43 +34,47 @@ I wanted to create a self-directed learning environment. I've learned:
 ### GitOps
 ![GitOps Diagram](images/GitOps-Diagram)
 
-# Services
+## Services
 
 ### Core Infrastructure
-| Service | Purpose                 | URL/Access       | Stack      | Exposure     |
-| ------- | ----------------------- | ---------------- | ---------- | ------------ |
-| Proxmox | Virtualization          | 10.0.0.10        | Bare metal | LAN          |
-| PiVPN   | VPN                     | x.ptaszek.studio | VM         | Public (UDP) |
-| PiHole  | DNS server + AD blocker | 10.0.0.159       | VM         | LAN          |
-| Traefik | Reverse-proxy           | 10.0.0.206:8080  | Container  | LAN          |
+| Service  | Purpose                 | URL/Access       | Stack      | Exposure     |
+| -------- | ----------------------- | ---------------- | ---------- | ------------ |
+| Proxmox  | Virtualization          | 10.0.0.10        | Bare metal | LAN          |
+| PiVPN    | VPN                     | x.ptaszek.studio | VM         | Public (UDP) |
+| PiHole   | DNS server + AD blocker | 10.0.0.159       | VM         | LAN          |
+| Traefik  | Reverse-proxy           | 10.0.0.206:8080  | Container  | VPN only     |
+| Postgres | Relational database     | postgres:5432    | Container  | Internal     |
 ### User Services
-| Service           | Purpose                 | URL/Access      | Stack     | Exposure        |
-| ----------------- | ----------------------- | --------------- | --------- | --------------- |
-| Dockerized-Quartz | Site hosting + building | [ptaszek.studio](https://ptaszek.studio)  | Container | Public (HTTP/S) |
-| Calibre web       | E-book management       | 10.0.0.206:8083 | Container | Internal        |
+| Service           | Purpose                 | URL/Access             | Stack     | Exposure             |
+| ----------------- | ----------------------- | ---------------------- | --------- | -------------------- |
+| Dockerized-Quartz | Site hosting + building | ptaszek.studio         | Container | Public (HTTP/S)      |
+| Calibre web       | E-book management       | calibre.ptaszek.studio | Container | VPN only             |
+| Remark            | Site comments           | remark.ptaszek.studio  | Container | Public w/ Basic Auth |
 ### Observability
-| Service       | Purpose                      | URL/Access             | Stack     | Exposure        |
-| ------------- | ---------------------------- | ---------------------- | --------- | --------------- |
-| Prometheus    | Metrics aggregation          | prometheus:9090        | Container | LAN             |
-| Grafana       | Dashboards                   | grafana.ptaszek.studio | Container | Public (HTTP/S) |
-| Loki          | Logs aggregation             | loki:3100              | Container | LAN             |
-| Promtail      | Log shipper                  | —                      | Systemd   | LAN             |
-| Node Exporter | Metrics shipper              | —                      | Systemd   | LAN             |
-| cAdvisor      | Container Metrics Collection | cAdvisor:8080          | Container | Internal        
+| Service           | Purpose                      | URL/Access                       | Stack     | Exposure             |
+| ----------------- | ---------------------------- | -------------------------------- | --------- | -------------------- |
+| Prometheus        | Metrics aggregation          | prometheus:9090                  | Container | LAN                  |
+| Grafana           | Dashboards                   | grafana.ptaszek.studio           | Container | Public (HTTP/S)      |
+| Loki              | Logs aggregation             | loki:3100                        | Container | LAN                  |
+| Promtail          | Log shipper                  | —                                | Systemd   | LAN                  |
+| Node Exporter     | Metrics shipper              | —                                | Systemd   | LAN                  |
+| cAdvisor          | Container Metrics Collection | cAdvisor.ptaszek.studio          | Container | VPN only             |
+| ingress-dashboard | Traefik dashboard            | ingress-dashboard.ptaszek.studio | Container | VPN only             |
+| ingress-agent     | Ingress agent                | ingress-agent:5000               | Container | Internal             |
+| umami             | ptaszek.studio analytics     | umami.ptaszek.studio             | Container | Public w/ Basic Auth |
 ### Docs & Version Control
-| Service      | Purpose            | URL/Access          | Stack     | Exposure        |
-| ------------ | ------------------ | ------------------- | --------- | --------------- |
-| Gitea        | Version control    | gitea:3000          | Container | Internal        |
-| Gitea-runner | Gitea CI/CD        | —                   | Container | Internal        |
-| Postgres     | Gitea database     | postgres:5432       | Container | Internal        |
-| Quartz-docs  | Documentation site | docs.ptaszek.studio | Container | Public (HTTP/S) 
+| Service      | Purpose            | URL/Access          | Stack     | Exposure |
+| ------------ | ------------------ | ------------------- | --------- | -------- |
+| Gitea        | Version control    | gitea:3000          | Container | VPN only |
+| Gitea-runner | Gitea CI/CD        | —                   | Container | Internal |
+| Quartz-docs  | Documentation site | docs.ptaszek.studio | Container | VPN only |
 
 ## Networking
 
 | Network          | Purpose                                              |
 |------------------|------------------------------------------------------|
 | `proxy`          | Traefik ↔ public-facing services                     |
-| `monitoring`     | Internal-only bridge for the observability stack      |
+| `private`     | Internal-only; routed to by Local DNS      |
 | `monitoring_lan` | Bridged to LAN for scraping Node Exporter on other VMs |
 | `db-gitea`       | Gitea ↔ PostgreSQL isolation                         |
 | `db-umami`       | Umami ↔ PostgreSQL isolation                         | 
