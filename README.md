@@ -11,7 +11,7 @@ Self-hosted infrastructure **showcase** running on Proxmox, orchestrated with Do
 > **Layered security**
 > Segmented Docker networks isolate databases, monitoring, & public services. Traefik terminates TLS Let's Encrypt certs. Sensitive dashboards sit behind VPN-only access with basic auth.
 
-I especially enjoyed creating the technical articles that I used to teach these concepts via workshops at my university. [See them here](https://ptaszek.studio/Lab)
+I especially enjoyed creating the technical articles that I used to teach these concepts via workshops at my university. [See them here](https://notes.ptaszek.studio/Lab)
 
 <img width="1171" height="651" alt="Grafana-Showcase" src="https://github.com/user-attachments/assets/5f4ada9b-fb07-4480-acf8-eea6610349b3" />
 
@@ -21,7 +21,7 @@ I wanted to create a self-directed learning environment. I've learned:
 * System design and DevOps practices
 * Automation and scripting
 * Technical documentation design & teaching those concepts via workshops
-* To deploy useful services for myself (like [my website](https://ptaszek.studio)!)
+* To deploy useful services for myself (like [this website](https://notes.ptaszek.studio)!)
 
 # Architecture
 
@@ -47,7 +47,7 @@ I wanted to create a self-directed learning environment. I've learned:
 ### User Services
 | Service           | Purpose                 | URL/Access             | Stack     | Exposure             |
 | ----------------- | ----------------------- | ---------------------- | --------- | -------------------- |
-| Dockerized-Quartz | Site hosting + building | ptaszek.studio         | Container | Public (HTTP/S)      |
+| Dockerized-Quartz | Site hosting + building | notes.ptaszek.studio         | Container | Public (HTTP/S)      |
 | Calibre web       | E-book management       | calibre.ptaszek.studio | Container | VPN only             |
 | Remark            | Site comments           | remark.ptaszek.studio  | Container | Public w/ Basic Auth |
 ### Observability
